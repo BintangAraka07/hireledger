@@ -53,7 +53,7 @@ export function AppSidebar() {
             <div className="absolute inset-0 bg-gradient-primary blur-md opacity-60" />
             <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl">
   <img
-    src="/img/hireledger.png"
+    src="/hireledger.png"
     alt="HireLedger"
     className="h-full w-full object-contain"
   />

@@ -27,7 +27,7 @@ const Landing = () => {
               <div className="absolute inset-0 bg-gradient-primary blur-md opacity-60" />
               <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-white/5 p-1">
   <img
-    src="/img/hireledger.png"
+    src="/hireledger.png"
     alt="HireLedger Logo"
     className="h-full w-full object-contain"
   />
