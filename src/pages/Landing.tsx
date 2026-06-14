@@ -16,6 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logoImg from "../../img/hireledger.png";
 
 const Landing = () => {
   return (
@@ -27,7 +28,7 @@ const Landing = () => {
               <div className="absolute inset-0 bg-gradient-primary blur-md opacity-60" />
               <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-white/5 p-1">
   <img
-    src="/hireledger.png"
+    src={logoImg}
     alt="HireLedger Logo"
     className="h-full w-full object-contain"
   />

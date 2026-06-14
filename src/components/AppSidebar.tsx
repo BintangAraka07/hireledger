@@ -12,6 +12,7 @@ import {
   Settings,
   Hexagon,
 } from "lucide-react";
+import logoImg from "../../img/hireledger.png";
 import {
   Sidebar,
   SidebarContent,
@@ -53,7 +54,7 @@ export function AppSidebar() {
             <div className="absolute inset-0 bg-gradient-primary blur-md opacity-60" />
             <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl">
   <img
-    src="/hireledger.png"
+    src={logoImg}
     alt="HireLedger"
     className="h-full w-full object-contain"
   />
