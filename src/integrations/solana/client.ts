@@ -18,6 +18,10 @@ let connection: Connection | null = null;
 export function getConnection(): Connection {
   if (!connection) {
     const endpoint = SOLANA_RPC_URL || clusterApiUrl(SOLANA_NETWORK as "devnet" | "mainnet-beta" | "testnet");
+    console.log("🌐 [getConnection] Creating connection:", {
+      network: SOLANA_NETWORK,
+      rpcUrl: endpoint,
+    });
     connection = new Connection(endpoint, "confirmed");
   }
   return connection;
@@ -35,8 +39,15 @@ export function getAddressExplorerUrl(address: string): string {
 
 export async function getSolBalance(publicKey: PublicKey): Promise<number> {
   const conn = getConnection();
+  console.log("💰 [getSolBalance] Checking balance for:", publicKey.toBase58());
   const lamports = await conn.getBalance(publicKey);
-  return lamports / LAMPORTS_PER_SOL;
+  const sol = lamports / LAMPORTS_PER_SOL;
+  console.log("💰 [getSolBalance] Balance result:", {
+    lamports,
+    sol,
+    address: publicKey.toBase58().substring(0, 10) + "...",
+  });
+  return sol;
 }
 
 export async function getRecentTransactions(publicKey: PublicKey, limit = 10) {
@@ -117,7 +128,7 @@ export async function anchorDocumentHash(
     );
   }
 
-  // ✅ STEP 2: Build memo instruction only
+  // ✅ STEP 2: Build memo instruction 
   console.log("🔍 [anchorDocumentHash] Building transaction...");
   const transaction = new Transaction().add({
     keys: [],
@@ -152,19 +163,53 @@ export async function anchorDocumentHash(
   console.log("✅ [anchorDocumentHash] Simulation successful, proceeding with signing");
 
   // ✅ STEP 4: Now safe to sign and send
-  const signed = await signTransaction(transaction);
-  console.log("🔐 [anchorDocumentHash] Transaction signed, sending to blockchain...");
-  
-  const signature = await conn.sendRawTransaction(signed.serialize());
-  console.log("✅ [anchorDocumentHash] Transaction sent:", signature);
-  
-  await conn.confirmTransaction({ signature, blockhash, lastValidBlockHeight });
-  console.log("✅ [anchorDocumentHash] Transaction confirmed");
+  try {
+    console.log("🔐 [anchorDocumentHash] Requesting signature from Phantom wallet...");
+    console.log("📋 [anchorDocumentHash] Transaction details:", {
+      instructions: transaction.instructions.length,
+      feePayer: walletPublicKey.toBase58().substring(0, 10) + "...",
+      recentBlockhash: transaction.recentBlockhash?.substring(0, 10) + "...",
+    });
 
-  const status = await conn.getSignatureStatus(signature);
-  const slot = status.value?.slot ?? 0;
+    console.log("⏳ [anchorDocumentHash] Waiting for Phantom popup response...");
+    
+    // Phantom popup should appear here
+    const signed = await signTransaction(transaction);
+    
+    console.log("✅ [anchorDocumentHash] Transaction signed successfully");
+    console.log("📤 [anchorDocumentHash] Sending transaction to blockchain...");
+    
+    const signature = await conn.sendRawTransaction(signed.serialize());
+    console.log("✅ [anchorDocumentHash] Transaction sent:", signature);
+    
+    await conn.confirmTransaction({ signature, blockhash, lastValidBlockHeight });
+    console.log("✅ [anchorDocumentHash] Transaction confirmed");
 
-  return { signature, slot };
+    const status = await conn.getSignatureStatus(signature);
+    const slot = status.value?.slot ?? 0;
+
+    return { signature, slot };
+  } catch (signError: any) {
+    console.error("❌ [anchorDocumentHash] Signing failed:", {
+      errorName: signError?.name,
+      errorMessage: signError?.message,
+      errorCode: signError?.code,
+      fullError: signError,
+    });
+    
+    // Provide helpful error messages
+    let userMessage = "Gagal menandatangani transaksi";
+    
+    if (signError?.message?.includes("Unexpected") || signError?.name === "WalletSignTransactionError") {
+      userMessage = `❌ Phantom error saat signing. Coba:\n1. Close Phantom popup\n2. Refresh halaman (Ctrl+F5)\n3. Disconnect & Reconnect Phantom\n4. Coba anchor lagi\n\nJika masih error: Phantom extension mungkin bermasalah`;
+    } else if (signError?.message?.includes("rejected")) {
+      userMessage = "⛔ Anda menolak signing di Phantom popup";
+    } else if (signError?.message?.includes("not ready")) {
+      userMessage = "⏳ Phantom wallet belum ready. Coba refresh halaman";
+    }
+    
+    throw new Error(userMessage);
+  }
 }
 
 export async function verifyHashOnChain(

@@ -2,10 +2,7 @@ export const SOLANA_NETWORK = import.meta.env.VITE_SOLANA_NETWORK || "devnet";
 export const SOLANA_RPC_URL =
   import.meta.env.VITE_SOLANA_RPC_URL || "https://api.devnet.solana.com";
 
-export const SOLANA_EXPLORER_BASE =
-  SOLANA_NETWORK === "mainnet-beta"
-    ? "https://explorer.solana.com"
-    : `https://explorer.solana.com?cluster=${SOLANA_NETWORK}`;
+export const SOLANA_EXPLORER_BASE = "https://explorer.solana.com";
 
 export const REMEMBER_ME_KEY = "hireledger.remember";
 export const WALLET_STORAGE_KEY = "hireledger.wallet";
